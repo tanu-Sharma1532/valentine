@@ -1889,7 +1889,7 @@ body {
 .memory-photo img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   transition: transform 0.3s ease;
 }
@@ -2386,4 +2386,134 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+/* Honey Bee Styles */
+.honey-bee-guide {
+  position: fixed;
+  z-index: 10000;
+  cursor: pointer;
+  transition: all 0.5s ease;
+  pointer-events: auto;
+}
+
+.honey-bee {
+  font-size: 40px;
+  animation: beeFloat 2s infinite alternate;
+}
+
+.bee-message {
+  position: absolute;
+  top: -70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, #ffeb3b, #ff9800);
+  color: #000;
+  padding: 10px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+  border: 2px solid #ff9800;
+  animation: messagePulse 1.5s infinite;
+}
+
+.bee-trail-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #ffeb3b;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+/* YES Button States */
+.yes-button-final {
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.yes-button-final.inactive {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: #ccc !important;
+  transform: scale(1);
+  animation: none !important;
+}
+
+.yes-button-final.inactive:hover {
+  transform: scale(1);
+  background-color: #ccc !important;
+}
+
+.yes-button-final.active {
+  opacity: 1;
+  cursor: pointer;
+  background: linear-gradient(45deg, #ff4081, #ff79a6);
+  animation: superPulse 0.5s infinite alternate;
+}
+
+.yes-button-final.active:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px gold, 0 0 60px #ff4081;
+}
+
+/* Animations */
+@keyframes beeFloat {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+}
+
+@keyframes messagePulse {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.05);
+  }
+}
+
+@keyframes superPulse {
+  from {
+    transform: scale(1);
+    box-shadow: 0 0 10px gold;
+  }
+  to {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px gold, 0 0 40px #ff4081;
+  }
+}
+
+@keyframes gentlePulse {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 64, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 64, 129, 0.6);
+  }
+}
+
+.pulse-attention {
+  animation: superPulse 0.5s infinite alternate !important;
+}
+
+/* Bee help instruction */
+.honey-bee-help {
+  margin-top: 15px;
+  padding: 10px;
+  background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+  border-radius: 10px;
+  border: 2px dashed #ff9800;
+}
+
+.bee-instruction {
+  margin: 0;
+  color: #d35400;
+  font-weight: bold;
+  text-align: center;
+  font-size: 14px;
 }

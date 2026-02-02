@@ -37,6 +37,9 @@ function App() {
   const [honeyBeeMessage, setHoneyBeeMessage] = useState('');
   const [honeyBeePath, setHoneyBeePath] = useState([]);
   const [isBeeGuiding, setIsBeeGuiding] = useState(false);
+  const [autoBeeStarted, setAutoBeeStarted] = useState(false);
+  const [canClickYes, setCanClickYes] = useState(false);
+  const [beeJourneyComplete, setBeeJourneyComplete] = useState(false);
   
   // Game 1: Find O-M-K-A-R Grid States
   const [gameGrid, setGameGrid] = useState([]);
@@ -71,7 +74,7 @@ function App() {
     { 
       id: 1, 
       url: "/img3.jpeg",
-      date: "First Meet",
+      date: "Normal Meet",
       year: "2022",
       description: "The day our story began"
     },
@@ -92,7 +95,7 @@ function App() {
     { 
       id: 4, 
       url: "/img5.jpeg",
-      date: "Adventure Day",
+      date: "Few Last Moments",
       year: "2023",
       description: "Exploring the world together"
     },
@@ -333,8 +336,40 @@ function App() {
     initializeGridGame();
   }, [shufflePhotos, initializeGridGame, initialMemoryPhotos]);
 
-  // Handle proposal responses - ONLY YES
+  // Check if all games are completed
+  const allGamesCompleted = game1Complete && mcqComplete && memoryGameComplete;
+
+  // Start bee automatically when all games are completed and user is on proposal page
+  useEffect(() => {
+    if (allGamesCompleted && activeGame === 'proposal' && !autoBeeStarted && !honeyBeeActive) {
+      // Start bee automatically after 2 seconds
+      const timer = setTimeout(() => {
+        setCanClickYes(false);
+        setBeeJourneyComplete(false);
+        activateHoneyBeeGuide();
+        setAutoBeeStarted(true);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [allGamesCompleted, activeGame, autoBeeStarted, honeyBeeActive]);
+
+  // Handle proposal responses
   const handleYes = () => {
+    if (!canClickYes) {
+      setHoneyBeeMessage("🐝 Hey! Follow me first! I'm leading you to the YES button! 🍯");
+      
+      // Make YES button pulse to draw attention
+      const yesButton = document.querySelector('.yes-button-final');
+      if (yesButton) {
+        yesButton.style.animation = 'gentlePulse 2s infinite';
+        setTimeout(() => {
+          yesButton.style.animation = '';
+        }, 2000);
+      }
+      return;
+    }
+    
     setAnswer('yes');
     setShowMessage(true);
     setHoneyBeeActive(false);
@@ -344,7 +379,12 @@ function App() {
   const activateHoneyBeeGuide = () => {
     setHoneyBeeActive(true);
     setIsBeeGuiding(true);
-    setHoneyBeeMessage("🐝 Buzz buzz! I'm here to help you find the YES button! Follow me!");
+    setCanClickYes(false);
+    setBeeJourneyComplete(false);
+    setHoneyBeeMessage("🐝 Buzz buzz! I'm here to help you find the YES button! Follow my trail! 🍯");
+    
+    // Clear any existing path
+    setHoneyBeePath([]);
     
     // Start the bee's journey to find the YES button
     setTimeout(() => startBeeJourney(), 1000);
@@ -378,6 +418,7 @@ function App() {
         
         // On final step, go to YES button
         if (currentStep === totalSteps) {
+          clearInterval(beeInterval);
           setTimeout(() => {
             // Find YES button position
             const yesButton = document.querySelector('.yes-button-final');
@@ -405,35 +446,41 @@ function App() {
                 
                 if (step >= beeSteps) {
                   clearInterval(flyInterval);
+                  setBeeJourneyComplete(true);
                   setHoneyBeeMessage("🐝 I made it! Now YOU click the YES button! It's the sweetest choice! 💝");
                   
-                  // Make YES button pulse
-                  yesButton.classList.add('pulse-attention');
+                  // Enable YES button
+                  setCanClickYes(true);
+                  
+                  // Make YES button pulse and glow
+                  setTimeout(() => {
+                    yesButton.style.transform = 'scale(1.1)';
+                    yesButton.style.boxShadow = '0 0 20px gold, 0 0 40px #ff4081';
+                    yesButton.style.zIndex = '1000';
+                    yesButton.classList.add('pulse-attention');
+                  }, 500);
                 }
               }, 50);
             }
           }, 1000);
         }
-      } else {
-        clearInterval(beeInterval);
       }
     }, 1500);
   };
 
   const handleBeeClick = () => {
-    if (!isBeeGuiding) return;
+    if (beeJourneyComplete) return;
     
-    setHoneyBeeMessage("🐝 Hey! Don't click me, follow me to the YES button!");
+    setHoneyBeeMessage("🐝 Hey! Don't click me, follow me to the YES button! I'll show you the way! 🍯");
     
-    // Make YES button super obvious
+    // Make YES button pulse gently to draw attention
     const yesButton = document.querySelector('.yes-button-final');
     if (yesButton) {
-      yesButton.style.transform = 'scale(1.5)';
-      yesButton.style.boxShadow = '0 0 30px gold, 0 0 60px #ff4081';
-      yesButton.style.zIndex = '1000';
-      yesButton.style.animation = 'superPulse 0.5s infinite alternate';
+      yesButton.style.animation = 'gentlePulse 2s infinite';
+      setTimeout(() => {
+        yesButton.style.animation = '';
+      }, 2000);
     }
-    setHoneyBeeMessage("🐝 LOOK! The YES button is glowing! Click it now! ✨💖");
   };
 
   // ========== GAME 1: Find O-M-K-A-R Grid ==========
@@ -591,9 +638,6 @@ function App() {
     
     return '';
   };
-
-  // Check if all games are completed
-  const allGamesCompleted = game1Complete && mcqComplete && memoryGameComplete;
 
   return (
     <div className="app">
@@ -785,26 +829,22 @@ function App() {
                               
                               <div className="final-buttons">
                                 <button 
-                                  className="yes-button-final"
+                                  className={`yes-button-final ${canClickYes ? 'active' : 'inactive'}`}
                                   onClick={handleYes}
                                   ref={yesButtonRef}
+                                  disabled={!canClickYes}
                                 >
-                                  <FaHeart /> YES! A THOUSAND TIMES YES! 💖
+                                  <FaHeart /> 
+                                  {canClickYes ? 'YES! A THOUSAND TIMES YES! 💖' : 'Follow the bee first! 🐝'}
                                 </button>
                                 
-                                <div className="honey-bee-help">
-                                  <button 
-                                    className="bee-help-button"
-                                    onClick={activateHoneyBeeGuide}
-                                  >
-                                    🐝 Need help finding YES? Let Honey Bee guide you!
-                                  </button>
-                                  {honeyBeeActive && (
+                                {honeyBeeActive && !canClickYes && (
+                                  <div className="honey-bee-help">
                                     <p className="bee-instruction">
-                                      Follow the buzzing bee! It will lead you to the YES button! 🍯
+                                      🐝 Follow the buzzing bee! It will lead you to the YES button! 🍯
                                     </p>
-                                  )}
-                                </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
 
@@ -998,7 +1038,7 @@ function App() {
                         const messages = {
                           'O': "O is for 'Only' - You're the only one who makes my heart race! 💓",
                           'M': "M is for 'Mine' - You'll always be mine, now and forever! 💝",
-                          'K': "K is for 'Keeper' - You're definitely a keeper! 🥰",
+                          'K': "K is for 'Kissable' - Your lips are my favorite! 💋",
                           'A': "A is for 'Amazing' - You make every day amazing! ✨",
                           'R': "R is for 'Romantic' - You're my perfect romantic partner! 🌹"
                         };
@@ -1310,7 +1350,6 @@ function App() {
                         <img src={photo.url} alt={photo.description} />
                         <div className="photo-overlay">
                           <h4>{photo.date}</h4>
-                          <p>{photo.year}</p>
                           {selectedOrder.includes(photo.id) && (
                             <div className="selection-indicator">
                               #{selectedOrder.indexOf(photo.id) + 1}
@@ -1332,8 +1371,7 @@ function App() {
                         <div key={photo.id} className="timeline-item">
                           <div className="timeline-marker">{index + 1}</div>
                           <div className="timeline-content">
-                            <strong>{photo.date}</strong> ({photo.year})
-                            <p>{photo.description}</p>
+                            <strong>{photo.date}</strong> 
                           </div>
                         </div>
                       ))}
