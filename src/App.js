@@ -315,20 +315,7 @@ function App() {
   }, []);
 
   // ========== HONEY BEE GUIDE FUNCTIONS ==========
-  const activateHoneyBeeGuide = useCallback(() => {
-    setHoneyBeeActive(true);
-    setCanClickYes(false);
-    setBeeJourneyComplete(false);
-    setHoneyBeeMessage("🐝 Buzz buzz! I'm here to help you find the YES button! Follow my trail! 🍯");
-    
-    // Clear any existing path
-    setHoneyBeePath([]);
-    
-    // Start the bee's journey to find the YES button
-    setTimeout(() => startBeeJourney(), 1000);
-  }, []);
-
-  const startBeeJourney = () => {
+  const startBeeJourney = useCallback(() => {
     const messages = [
       "🐝 Let me guide you to the sweetest YES of your life!",
       "🐝 This way! The YES button is full of honey!",
@@ -404,7 +391,20 @@ function App() {
         }
       }
     }, 1500);
-  };
+  }, [honeyBeePosition.x, honeyBeePosition.y]);
+
+  const activateHoneyBeeGuide = useCallback(() => {
+    setHoneyBeeActive(true);
+    setCanClickYes(false);
+    setBeeJourneyComplete(false);
+    setHoneyBeeMessage("🐝 Buzz buzz! I'm here to help you find the YES button! Follow my trail! 🍯");
+    
+    // Clear any existing path
+    setHoneyBeePath([]);
+    
+    // Start the bee's journey to find the YES button
+    setTimeout(() => startBeeJourney(), 1000);
+  }, [startBeeJourney]);
 
   // Create floating elements (hearts and stars)
   useEffect(() => {
