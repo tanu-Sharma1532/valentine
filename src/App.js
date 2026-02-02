@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Confetti from 'react-confetti';
 import { 
   FaHeart, 
@@ -6,11 +6,6 @@ import {
   FaStar, 
   FaMusic, 
   FaEnvelope,
-  FaCamera,
-  FaUpload,
-  FaSmile,
-  FaKissWinkHeart,
-  FaGift,
   FaSearch,
   FaQuestionCircle,
   FaTrophy,
@@ -19,13 +14,9 @@ import {
   FaCheck,
   FaTimes,
   FaRandom,
-  FaClock,
-  FaPhotoVideo,
   FaEye,
-  FaEyeSlash,
   FaMale,
   FaFemale,
-  FaMousePointer,
   FaFire,
   FaLightbulb,
   FaChevronRight,
@@ -38,18 +29,13 @@ function App() {
   const [answer, setAnswer] = useState(null);
   const [showMessage, setShowMessage] = useState(false);
   const [hearts, setHearts] = useState([]);
-  const [photos, setPhotos] = useState([]);
-  const [photoPreview, setPhotoPreview] = useState(null);
   const [activeGame, setActiveGame] = useState('proposal'); // 'proposal', 'findOmkar', 'mcq', 'memory'
   
   // Honey Bee Guide States
   const [honeyBeeActive, setHoneyBeeActive] = useState(false);
   const [honeyBeePosition, setHoneyBeePosition] = useState({ x: 50, y: 50 });
-  const [honeyBeeTarget, setHoneyBeeTarget] = useState(null);
   const [honeyBeeMessage, setHoneyBeeMessage] = useState('');
   const [honeyBeePath, setHoneyBeePath] = useState([]);
-  const [showHoneyBeeYes, setShowHoneyBeeYes] = useState(false);
-  const [beeClickCount, setBeeClickCount] = useState(0);
   const [isBeeGuiding, setIsBeeGuiding] = useState(false);
   
   // Game 1: Find O-M-K-A-R Grid States
@@ -77,7 +63,6 @@ function App() {
   const [memoryGameComplete, setMemoryGameComplete] = useState(false);
   const [showMemoryHint, setShowMemoryHint] = useState(false);
   
-  const fileInputRef = useRef(null);
   const yesButtonRef = useRef(null);
 
   // Sample photos for memory game - Now using local photos from public folder
@@ -198,8 +183,8 @@ function App() {
         "Anywhere, as long as it's with you",
         "Curled up on the couch under a blanket",
         "That quiet corner of the café where we first talked for hours",
-        "All of the above"
-      ], 
+        "All of above"
+      ],
       correctAnswer: 3,
       hint: "Home isn't a place, it's wherever you are... 🏠",
       romanticReveal: "With you, everywhere feels like home and every moment feels magical ✨"
@@ -266,29 +251,15 @@ function App() {
     }
   ];
 
-  // Create floating elements (hearts and stars)
-  useEffect(() => {
-    const newHearts = Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      size: Math.random() * 30 + 10,
-      duration: Math.random() * 10 + 5,
-      delay: Math.random() * 5,
-      type: Math.random() > 0.5 ? 'heart' : 'star',
-      emoji: Math.random() > 0.5 ? '💫' : '✨'
-    }));
-    setHearts(newHearts);
-    
-    // Initialize memory game
-    setMemoryPhotos(initialMemoryPhotos);
-    shufflePhotos();
-    
-    // Initialize Find OMKAR grid game
-    initializeGridGame();
-  }, []);
+  // Initialize memory game with useCallback to avoid dependency issues
+  const shufflePhotos = useCallback(() => {
+    const shuffled = [...initialMemoryPhotos].sort(() => Math.random() - 0.5);
+    setShuffledPhotos(shuffled);
+    setSelectedOrder([]);
+  }, [initialMemoryPhotos]);
 
   // Initialize Find OMKAR grid game
-  const initializeGridGame = () => {
+  const initializeGridGame = useCallback(() => {
     const gridSize = 8; // 8x8 grid
     const targetWord = 'OMKAR';
     const allLetters = targetWord.split('');
@@ -338,36 +309,28 @@ function App() {
     setAttempts(0);
     setGame1Complete(false);
     setGridMessage('Find all letters: O M K A R');
-  };
+  }, []);
 
-  // Initialize memory game
-  const shufflePhotos = () => {
-    const shuffled = [...initialMemoryPhotos].sort(() => Math.random() - 0.5);
-    setShuffledPhotos(shuffled);
-    setSelectedOrder([]);
-  };
-
-  // Handle photo upload
-  const handlePhotoUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const newPhoto = {
-          id: Date.now(),
-          url: reader.result,
-          caption: "Another beautiful memory with you 💖"
-        };
-        setPhotos([...photos, newPhoto]);
-        setPhotoPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const triggerPhotoUpload = () => {
-    fileInputRef.current.click();
-  };
+  // Create floating elements (hearts and stars)
+  useEffect(() => {
+    const newHearts = Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      size: Math.random() * 30 + 10,
+      duration: Math.random() * 10 + 5,
+      delay: Math.random() * 5,
+      type: Math.random() > 0.5 ? 'heart' : 'star',
+      emoji: Math.random() > 0.5 ? '💫' : '✨'
+    }));
+    setHearts(newHearts);
+    
+    // Initialize memory game
+    setMemoryPhotos(initialMemoryPhotos);
+    shufflePhotos();
+    
+    // Initialize Find OMKAR grid game
+    initializeGridGame();
+  }, [shufflePhotos, initializeGridGame]);
 
   // Handle proposal responses - ONLY YES
   const handleYes = () => {
@@ -380,7 +343,6 @@ function App() {
   const activateHoneyBeeGuide = () => {
     setHoneyBeeActive(true);
     setIsBeeGuiding(true);
-    setBeeClickCount(0);
     setHoneyBeeMessage("🐝 Buzz buzz! I'm here to help you find the YES button! Follow me!");
     
     // Start the bee's journey to find the YES button
@@ -425,9 +387,6 @@ function App() {
               const targetX = ((rect.left + rect.width/2 - containerRect.left) / containerRect.width) * 100;
               const targetY = ((rect.top + rect.height/2 - containerRect.top) / containerRect.height) * 100;
               
-              setHoneyBeeTarget({ x: targetX, y: targetY });
-              setHoneyBeeMessage("🐝 FOUND IT! The YES button! Click it for sweet love! 🍯💖");
-              
               // Animate bee flying to YES button
               const beeSteps = 20;
               let step = 0;
@@ -445,7 +404,6 @@ function App() {
                 
                 if (step >= beeSteps) {
                   clearInterval(flyInterval);
-                  setShowHoneyBeeYes(true);
                   setHoneyBeeMessage("🐝 I made it! Now YOU click the YES button! It's the sweetest choice! 💝");
                   
                   // Make YES button pulse
@@ -464,29 +422,17 @@ function App() {
   const handleBeeClick = () => {
     if (!isBeeGuiding) return;
     
-    setBeeClickCount(prev => {
-      const newCount = prev + 1;
-      
-      if (newCount === 1) {
-        setHoneyBeeMessage("🐝 Hey! Don't click me, follow me to the YES button!");
-      } else if (newCount === 2) {
-        setHoneyBeeMessage("🐝 Buzz! I'm trying to help you find love!");
-      } else if (newCount === 3) {
-        setHoneyBeeMessage("🐝 Okay okay! One more click and I'll make the YES button SUPER obvious!");
-      } else if (newCount >= 4) {
-        // Make YES button super obvious
-        const yesButton = document.querySelector('.yes-button-final');
-        if (yesButton) {
-          yesButton.style.transform = 'scale(1.5)';
-          yesButton.style.boxShadow = '0 0 30px gold, 0 0 60px #ff4081';
-          yesButton.style.zIndex = '1000';
-          yesButton.style.animation = 'superPulse 0.5s infinite alternate';
-        }
-        setHoneyBeeMessage("🐝 LOOK! The YES button is glowing! Click it now! ✨💖");
-      }
-      
-      return newCount;
-    });
+    setHoneyBeeMessage("🐝 Hey! Don't click me, follow me to the YES button!");
+    
+    // Make YES button super obvious
+    const yesButton = document.querySelector('.yes-button-final');
+    if (yesButton) {
+      yesButton.style.transform = 'scale(1.5)';
+      yesButton.style.boxShadow = '0 0 30px gold, 0 0 60px #ff4081';
+      yesButton.style.zIndex = '1000';
+      yesButton.style.animation = 'superPulse 0.5s infinite alternate';
+    }
+    setHoneyBeeMessage("🐝 LOOK! The YES button is glowing! Click it now! ✨💖");
   };
 
   // ========== GAME 1: Find O-M-K-A-R Grid ==========
@@ -789,7 +735,7 @@ function App() {
                     <GiRose className="rose-icon" />
                   </h1>
                   <p className="subtitle">
-                    <FaKissWinkHeart /> A special invitation from Tanu to Omkar <FaKissWinkHeart />
+                    <FaStar /> A special invitation from Tanu to Omkar <FaStar />
                   </p>
                 </header>
 
