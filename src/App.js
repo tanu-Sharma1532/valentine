@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Confetti from 'react-confetti';
 import { 
   FaHeart, 
@@ -66,7 +66,8 @@ function App() {
   const yesButtonRef = useRef(null);
 
   // Sample photos for memory game - Now using local photos from public folder
-  const initialMemoryPhotos = [
+  // Using useMemo to prevent recreation on every render
+  const initialMemoryPhotos = useMemo(() => [
     { 
       id: 1, 
       url: "/img3.jpeg",
@@ -102,7 +103,7 @@ function App() {
       year: "2024",
       description: "Making everyday moments special"
     }
-  ];
+  ], []);
 
   const mcqQuestions = [
     {
@@ -183,7 +184,7 @@ function App() {
         "Anywhere, as long as it's with you",
         "Curled up on the couch under a blanket",
         "That quiet corner of the café where we first talked for hours",
-        "All of above"
+        "Both a and c"
       ],
       correctAnswer: 3,
       hint: "Home isn't a place, it's wherever you are... 🏠",
@@ -330,7 +331,7 @@ function App() {
     
     // Initialize Find OMKAR grid game
     initializeGridGame();
-  }, [shufflePhotos, initializeGridGame]);
+  }, [shufflePhotos, initializeGridGame, initialMemoryPhotos]);
 
   // Handle proposal responses - ONLY YES
   const handleYes = () => {
