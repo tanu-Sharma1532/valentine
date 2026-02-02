@@ -199,7 +199,7 @@ function App() {
         "Curled up on the couch under a blanket",
         "That quiet corner of the café where we first talked for hours",
         "All of the above"
-      ],
+      ], 
       correctAnswer: 3,
       hint: "Home isn't a place, it's wherever you are... 🏠",
       romanticReveal: "With you, everywhere feels like home and every moment feels magical ✨"
