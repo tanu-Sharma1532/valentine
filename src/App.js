@@ -36,7 +36,6 @@ function App() {
   const [honeyBeePosition, setHoneyBeePosition] = useState({ x: 50, y: 50 });
   const [honeyBeeMessage, setHoneyBeeMessage] = useState('');
   const [honeyBeePath, setHoneyBeePath] = useState([]);
-  const [isBeeGuiding, setIsBeeGuiding] = useState(false);
   const [autoBeeStarted, setAutoBeeStarted] = useState(false);
   const [canClickYes, setCanClickYes] = useState(false);
   const [beeJourneyComplete, setBeeJourneyComplete] = useState(false);
@@ -315,70 +314,9 @@ function App() {
     setGridMessage('Find all letters: O M K A R');
   }, []);
 
-  // Create floating elements (hearts and stars)
-  useEffect(() => {
-    const newHearts = Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      size: Math.random() * 30 + 10,
-      duration: Math.random() * 10 + 5,
-      delay: Math.random() * 5,
-      type: Math.random() > 0.5 ? 'heart' : 'star',
-      emoji: Math.random() > 0.5 ? '💫' : '✨'
-    }));
-    setHearts(newHearts);
-    
-    // Initialize memory game
-    setMemoryPhotos(initialMemoryPhotos);
-    shufflePhotos();
-    
-    // Initialize Find OMKAR grid game
-    initializeGridGame();
-  }, [shufflePhotos, initializeGridGame, initialMemoryPhotos]);
-
-  // Check if all games are completed
-  const allGamesCompleted = game1Complete && mcqComplete && memoryGameComplete;
-
-  // Start bee automatically when all games are completed and user is on proposal page
-  useEffect(() => {
-    if (allGamesCompleted && activeGame === 'proposal' && !autoBeeStarted && !honeyBeeActive) {
-      // Start bee automatically after 2 seconds
-      const timer = setTimeout(() => {
-        setCanClickYes(false);
-        setBeeJourneyComplete(false);
-        activateHoneyBeeGuide();
-        setAutoBeeStarted(true);
-      }, 2000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [allGamesCompleted, activeGame, autoBeeStarted, honeyBeeActive]);
-
-  // Handle proposal responses
-  const handleYes = () => {
-    if (!canClickYes) {
-      setHoneyBeeMessage("🐝 Hey! Follow me first! I'm leading you to the YES button! 🍯");
-      
-      // Make YES button pulse to draw attention
-      const yesButton = document.querySelector('.yes-button-final');
-      if (yesButton) {
-        yesButton.style.animation = 'gentlePulse 2s infinite';
-        setTimeout(() => {
-          yesButton.style.animation = '';
-        }, 2000);
-      }
-      return;
-    }
-    
-    setAnswer('yes');
-    setShowMessage(true);
-    setHoneyBeeActive(false);
-  };
-
   // ========== HONEY BEE GUIDE FUNCTIONS ==========
-  const activateHoneyBeeGuide = () => {
+  const activateHoneyBeeGuide = useCallback(() => {
     setHoneyBeeActive(true);
-    setIsBeeGuiding(true);
     setCanClickYes(false);
     setBeeJourneyComplete(false);
     setHoneyBeeMessage("🐝 Buzz buzz! I'm here to help you find the YES button! Follow my trail! 🍯");
@@ -388,7 +326,7 @@ function App() {
     
     // Start the bee's journey to find the YES button
     setTimeout(() => startBeeJourney(), 1000);
-  };
+  }, []);
 
   const startBeeJourney = () => {
     const messages = [
@@ -466,6 +404,66 @@ function App() {
         }
       }
     }, 1500);
+  };
+
+  // Create floating elements (hearts and stars)
+  useEffect(() => {
+    const newHearts = Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      size: Math.random() * 30 + 10,
+      duration: Math.random() * 10 + 5,
+      delay: Math.random() * 5,
+      type: Math.random() > 0.5 ? 'heart' : 'star',
+      emoji: Math.random() > 0.5 ? '💫' : '✨'
+    }));
+    setHearts(newHearts);
+    
+    // Initialize memory game
+    setMemoryPhotos(initialMemoryPhotos);
+    shufflePhotos();
+    
+    // Initialize Find OMKAR grid game
+    initializeGridGame();
+  }, [shufflePhotos, initializeGridGame, initialMemoryPhotos]);
+
+  // Check if all games are completed
+  const allGamesCompleted = game1Complete && mcqComplete && memoryGameComplete;
+
+  // Start bee automatically when all games are completed and user is on proposal page
+  useEffect(() => {
+    if (allGamesCompleted && activeGame === 'proposal' && !autoBeeStarted && !honeyBeeActive) {
+      // Start bee automatically after 2 seconds
+      const timer = setTimeout(() => {
+        setCanClickYes(false);
+        setBeeJourneyComplete(false);
+        activateHoneyBeeGuide();
+        setAutoBeeStarted(true);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [allGamesCompleted, activeGame, autoBeeStarted, honeyBeeActive, activateHoneyBeeGuide]);
+
+  // Handle proposal responses
+  const handleYes = () => {
+    if (!canClickYes) {
+      setHoneyBeeMessage("🐝 Hey! Follow me first! I'm leading you to the YES button! 🍯");
+      
+      // Make YES button pulse to draw attention
+      const yesButton = document.querySelector('.yes-button-final');
+      if (yesButton) {
+        yesButton.style.animation = 'gentlePulse 2s infinite';
+        setTimeout(() => {
+          yesButton.style.animation = '';
+        }, 2000);
+      }
+      return;
+    }
+    
+    setAnswer('yes');
+    setShowMessage(true);
+    setHoneyBeeActive(false);
   };
 
   const handleBeeClick = () => {
