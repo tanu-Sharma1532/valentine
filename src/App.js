@@ -184,7 +184,7 @@ function App() {
         "Anywhere, as long as it's with you",
         "Curled up on the couch under a blanket",
         "That quiet corner of the café where we first talked for hours",
-        "Both a and c"
+        "All of the above"
       ],
       correctAnswer: 3,
       hint: "Home isn't a place, it's wherever you are... 🏠",
